@@ -2,10 +2,72 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>My First Website</title>
+  <title>My First Website - PDF Merger</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+      color: #333;
+      background: #f7f7f7;
+    }
+    h1 {
+      color: #ff69b4;
+    }
+    input, button {
+      margin: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #ff69b4;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #ff85c1;
+    }
+  </style>
 </head>
 <body>
-  <h1>Welcome to my website!</h1>
-  <p>This is my first GitHub Pages site 😎</p>
+  <h1>Welcome to the PDF Merger!</h1>
+  <p>Here you can merge multiple pdf files into one!</p>
+
+  <h2>PDF Merger Tool</h2>
+  <p>Select multiple PDFs and merge them into one!</p>
+  <input type="file" id="pdfFiles" multiple accept=".pdf">
+  <br>
+  <button onclick="mergePDFs()">Merge PDFs</button>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script>
+    async function mergePDFs() {
+      const input = document.getElementById('pdfFiles');
+      if (!input.files.length) {
+        alert("Please select PDFs!");
+        return;
+      }
+
+      const mergedPdf = await PDFLib.PDFDocument.create();
+
+      for (let file of input.files) {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
+        const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+        copiedPages.forEach((page) => mergedPdf.addPage(page));
+      }
+
+      const mergedPdfBytes = await mergedPdf.save();
+      const blob = new Blob([mergedPdfBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "merged.pdf";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
 </body>
 </html>
